@@ -1,14 +1,12 @@
 import { Button, ButtonGroup, Flex, Heading, Stack } from "@chakra-ui/react";
 import ScheduleTable from "./ScheduleTable.tsx";
-import { useScheduleContext } from "./ScheduleContext.tsx";
+import { useScheduleContext, useScheduleDispatch, useTableSchedules } from "./ScheduleContext.tsx";
 import SearchDialog from "./SearchDialog.tsx";
 import { memo, useCallback, useState } from "react";
-import { Schedule } from "./types.ts";
 
 // 개별 시간표 아이템 컴포넌트 (메모이제이션으로 불필요한 리렌더링 방지)
 const ScheduleTableItem = memo(({
   tableId,
-  schedules,
   index,
   disabledRemoveButton,
   onSearchInfoChange,
@@ -16,14 +14,19 @@ const ScheduleTableItem = memo(({
   onRemove
 }: {
   tableId: string;
-  schedules: Schedule[];
   index: number;
   disabledRemoveButton: boolean;
   onSearchInfoChange: (info: { tableId: string; day?: string; time?: number } | null) => void;
   onDuplicate: (targetId: string) => void;
   onRemove: (targetId: string) => void;
 }) => {
-  const { setSchedulesMap } = useScheduleContext();
+  console.log(`[ScheduleTableItem ${index + 1}] 렌더링`);
+
+  // 특정 테이블의 스케줄만 구독 (해당 테이블 변경 시에만 리렌더링)
+  const schedules = useTableSchedules(tableId);
+
+  // dispatch만 구독하여 상태 변경 시 리렌더링 방지
+  const setSchedulesMap = useScheduleDispatch();
 
   // 각 테이블별 콜백을 useCallback으로 메모이제이션
   const handleScheduleTimeClick = useCallback((timeInfo: { day: string; time: number }) => {
@@ -79,7 +82,9 @@ const ScheduleTableItem = memo(({
   );
 });
 
-export const ScheduleTables = () => {
+export const ScheduleTables = memo(() => {
+  console.log("[ScheduleTables] 렌더링");
+
   const { schedulesMap, setSchedulesMap } = useScheduleContext();
   const [searchInfo, setSearchInfo] = useState<{
     tableId: string;
@@ -113,11 +118,10 @@ export const ScheduleTables = () => {
   return (
     <>
       <Flex w="full" gap={6} p={6} flexWrap="wrap">
-        {Object.entries(schedulesMap).map(([tableId, schedules], index) => (
+        {Object.keys(schedulesMap).map((tableId, index) => (
           <ScheduleTableItem
             key={tableId}
             tableId={tableId}
-            schedules={schedules}
             index={index}
             disabledRemoveButton={disabledRemoveButton}
             onSearchInfoChange={handleSearchInfoChange}
@@ -134,4 +138,4 @@ export const ScheduleTables = () => {
       )}
     </>
   );
-};
+});

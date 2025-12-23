@@ -29,7 +29,7 @@ import {
   VStack,
   Wrap,
 } from "@chakra-ui/react";
-import { useScheduleContext } from "./ScheduleContext.tsx";
+import { useScheduleDispatch } from "./ScheduleContext.tsx";
 import { Lecture } from "./types.ts";
 import { parseSchedule } from "./utils.ts";
 import axios from "axios";
@@ -184,7 +184,8 @@ const TimeSlotCheckbox = memo(({ id, label }: { id: number; label: string }) => 
 
 // TODO: 이 컴포넌트에서 불필요한 연산이 발생하지 않도록 다양한 방식으로 시도해주세요.
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
-  const { setSchedulesMap } = useScheduleContext();
+  // dispatch만 구독하여 상태 변경 시 리렌더링 방지
+  const setSchedulesMap = useScheduleDispatch();
 
   const loaderWrapperRef = useRef<HTMLDivElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
